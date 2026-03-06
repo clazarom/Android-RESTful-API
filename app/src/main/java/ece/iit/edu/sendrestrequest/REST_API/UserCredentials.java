@@ -37,7 +37,7 @@ public class UserCredentials {
     public void setUserID(String userID){this.userID=userID;}
     public void setFirstName(String firstName){this.firstName=firstName;}
     public void setLastName(String lastName){this.lastName=lastName;}
-    public void setDateOfBirth(String date){this.dateOfBirth=dateOfBirth;}
+    public void setDateOfBirth(String date){this.dateOfBirth=date;}
     public void setGender(String gender){this.gender=gender;}
 
     public String getTokenID(){return tokenID;}
