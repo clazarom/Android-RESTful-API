@@ -2,13 +2,9 @@ package ece.iit.edu.sendrestrequest.REST_API;
 
 import android.util.Log;
 
-import java.io.InputStream;
 import java.security.KeyManagementException;
-import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -18,11 +14,12 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 
 /**
- * Class to manage https and ssl connections - deal with servers certificates
- *
- * Retrofit tutorial to add ssl certificates: https://proandroiddev.com/configuring-retrofit-2-client-in-android-130455eaccbd
+ * Class to manage HTTPS/SSL connections and provide a configured OkHttpClient.
+ * Adds standard Content-Type and Accept headers for cross-platform compatibility
+ * (webapp, C++ clients, Android).
  */
 public class HttpsClientManager {
 
@@ -59,11 +56,19 @@ public class HttpsClientManager {
     }
 
     private void initializeHttpsClient(){
-        okHttpClient = new OkHttpClient();
-        okHttpClient = okHttpClient.newBuilder()
+        okHttpClient = new OkHttpClient.Builder()
                 .sslSocketFactory(sslSocketFactory, allowAllTrustCertificate)
-                .hostnameVerifier(hostnameVerifier).build();
-
+                .hostnameVerifier(hostnameVerifier)
+                .addInterceptor(chain -> {
+                    Request original = chain.request();
+                    Request request = original.newBuilder()
+                            .header("Content-Type", "application/json")
+                            .header("Accept", "application/json")
+                            .method(original.method(), original.body())
+                            .build();
+                    return chain.proceed(request);
+                })
+                .build();
     }
 
     public OkHttpClient getOkHttpClient(){
@@ -87,12 +92,7 @@ public class HttpsClientManager {
         public void checkClientTrusted(
                 java.security.cert.X509Certificate[] chain,
                 String authType) throws CertificateException {
-            //TODO
             Log.d(TAG, "Check client trusted ("+authType+"): "+ chain.length);
-            for (int i = 0; i < chain.length; i++) {
-                Log.d(TAG, "Certificate: "+ chain[i].getType());
-            }
-
         }
 
         @Override
@@ -100,10 +100,6 @@ public class HttpsClientManager {
                 java.security.cert.X509Certificate[] chain,
                 String authType) throws CertificateException {
             Log.d(TAG, "Check server trusted ("+authType+"): "+ chain.length);
-            for (java.security.cert.X509Certificate certificate: chain) {
-                Log.d(TAG, "Certificate: "+ certificate.getType());
-            }
-
         }
 
         @Override

@@ -17,4 +17,9 @@ public class UserCredentialsResponse {
 
     public boolean getResponse(){return  response;}
     public UserCredentials getUserCredentials(){return userCredentials;}
+
+    @Override
+    public String toString(){
+        return "UserCredentialsResponse:{response=" + response + ", user=" + userCredentials + "}";
+    }
 }
